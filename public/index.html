@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Visual Orchestration Studio — DecodeLabs Project 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="grid-backdrop" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">◈</span>
+    <div class="brand-text">
+      <span class="brand-title">Visual Orchestration Studio</span>
+      <span class="brand-eyebrow">DECODELABS &middot; PROJECT 3 &middot; MULTIMODAL PIPELINE</span>
+    </div>
+  </div>
+  <div class="status-chip" id="groqStatus">
+    <span class="dot" id="groqDot"></span>
+    <span id="groqStatusText">Checking Groq connection…</span>
+  </div>
+</header>
+
+<main class="layout">
+
+  <!-- ── Control column ───────────────────────────────── -->
+  <section class="panel controls" aria-label="Generation controls">
+    <div class="panel-head">
+      <span class="panel-index">01</span>
+      <h2>Prompt Payload</h2>
+    </div>
+
+    <label class="field">
+      <span class="field-label">Prompt</span>
+      <textarea id="prompt" rows="3" placeholder="A lighthouse on a cliff at dawn, storm clouds breaking apart"></textarea>
+    </label>
+
+    <label class="field">
+      <span class="field-label">Negative prompt <span class="optional">optional</span></span>
+      <input id="negativePrompt" type="text" placeholder="blurry, text, watermark" />
+    </label>
+
+    <div class="field">
+      <span class="field-label">Aspect ratio</span>
+      <div class="ratio-picker" id="ratioPicker">
+        <button type="button" class="ratio-btn" data-ratio="16:9">
+          <span class="ratio-swatch r-16-9"></span>
+          <span>16:9<small>1344×768</small></span>
+        </button>
+        <button type="button" class="ratio-btn active" data-ratio="1:1">
+          <span class="ratio-swatch r-1-1"></span>
+          <span>1:1<small>1024×1024</small></span>
+        </button>
+        <button type="button" class="ratio-btn" data-ratio="9:16">
+          <span class="ratio-swatch r-9-16"></span>
+          <span>9:16<small>768×1344</small></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="field-label">Style preset</span>
+      <div class="chip-row" id="stylePicker">
+        <button type="button" class="chip active" data-style="none">None</button>
+        <button type="button" class="chip" data-style="cyberpunk">Cyberpunk</button>
+        <button type="button" class="chip" data-style="minimalism">Minimalism</button>
+        <button type="button" class="chip" data-style="photorealistic">Photoreal</button>
+        <button type="button" class="chip" data-style="watercolor">Watercolor</button>
+        <button type="button" class="chip" data-style="anime">Anime</button>
+      </div>
+    </div>
+
+    <label class="toggle-row">
+      <input type="checkbox" id="enhanceToggle" checked />
+      <span>Enhance prompt with Groq (llama-3.3-70b) before dispatch</span>
+    </label>
+
+    <button class="generate-btn" id="generateBtn">
+      <span>Deploy Payload</span>
+      <span class="btn-arrow">→</span>
+    </button>
+
+    <p class="hint" id="formHint">Idle. Configure a payload and deploy to run the pipeline.</p>
+  </section>
+
+  <!-- ── Pipeline + output column ─────────────────────── -->
+  <section class="panel output" aria-label="Pipeline and output">
+
+    <div class="panel-head">
+      <span class="panel-index">02</span>
+      <h2>Pipeline Execution</h2>
+    </div>
+
+    <ol class="pipeline-strip" id="pipelineStrip">
+      <li class="stage" data-stage="input">
+        <span class="stage-num">1</span>
+        <span class="stage-name">Prompt<br/>Payload</span>
+        <span class="stage-state">idle</span>
+      </li>
+      <li class="stage" data-stage="network">
+        <span class="stage-num">2</span>
+        <span class="stage-name">Network<br/>Gateway</span>
+        <span class="stage-state">idle</span>
+      </li>
+      <li class="stage" data-stage="security">
+        <span class="stage-num">3</span>
+        <span class="stage-name">Security<br/>Gates</span>
+        <span class="stage-state">idle</span>
+      </li>
+      <li class="stage" data-stage="transport">
+        <span class="stage-num">4</span>
+        <span class="stage-name">Transport<br/>Protocol</span>
+        <span class="stage-state">idle</span>
+      </li>
+      <li class="stage" data-stage="integrity">
+        <span class="stage-num">5</span>
+        <span class="stage-name">Integrity<br/>Verify</span>
+        <span class="stage-state">idle</span>
+      </li>
+      <li class="stage" data-stage="qa">
+        <span class="stage-num">6</span>
+        <span class="stage-name">Automated<br/>QA</span>
+        <span class="stage-state">idle</span>
+      </li>
+    </ol>
+
+    <div class="result-area" id="resultArea">
+      <div class="result-empty" id="resultEmpty">
+        <p>No asset generated yet.</p>
+        <p class="muted">The rendered image, resolution, retry count, and QA scores will surface here once the pipeline completes.</p>
+      </div>
+
+      <div class="result-content" id="resultContent" hidden>
+        <div class="canvas-wrap">
+          <img id="resultImage" alt="Generated asset" />
+        </div>
+        <div class="result-meta">
+          <div class="meta-row"><span>Resolution</span><span id="metaResolution">—</span></div>
+          <div class="meta-row"><span>Attempts</span><span id="metaAttempts">—</span></div>
+          <div class="meta-row"><span>Total time</span><span id="metaTime">—</span></div>
+          <div class="meta-row"><span>Final prompt</span><span id="metaPrompt">—</span></div>
+
+          <div class="qa-scores" id="qaScores">
+            <div class="score-block">
+              <span class="score-label">Aesthetic</span>
+              <div class="score-bar"><div class="score-fill" id="aestheticFill"></div></div>
+              <span class="score-value" id="aestheticValue">—</span>
+            </div>
+            <div class="score-block">
+              <span class="score-label">Semantic alignment</span>
+              <div class="score-bar"><div class="score-fill" id="semanticFill"></div></div>
+              <span class="score-value" id="semanticValue">—</span>
+            </div>
+            <p class="qa-notes" id="qaNotes"></p>
+          </div>
+
+          <button class="download-btn" id="downloadBtn">Download PNG</button>
+        </div>
+      </div>
+
+      <div class="result-error" id="resultError" hidden>
+        <div class="error-badge" id="errorStageBadge">STAGE</div>
+        <p id="errorMessage"></p>
+        <div class="exception-matrix" id="exceptionMatrix"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>Backend: <code>server/server.js</code></span>
+  <span>Image engine: Pollinations (no key) · Prompt + QA: Groq</span>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
